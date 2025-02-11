@@ -7,12 +7,6 @@
 
 ### 🏠 [Homepage](https://paramprkswad972834.vercel.app/)
 
-## Install
-
-```sh
-npm install
-```
-
 ## Author
 
 👤 **Jatin Verma**
