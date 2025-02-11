@@ -102,8 +102,9 @@ const FEATURED_PRODUCTS = [
       { size: "200g", price: 40 },
       { size: "500g", price: 80 },
       { size: "1kg", price: 160 },
-    ]},
-   {
+    ],
+  },
+  {
     id: "22",
     name: "Mustard Honey",
     description: "Pure & natural Mustard Honey",
@@ -115,8 +116,9 @@ const FEATURED_PRODUCTS = [
       { size: "200ml", price: 150 },
       { size: "500ml", price: 400 },
       { size: "1L", price: 750 },
-    ]},
-     {
+    ],
+  },
+  {
     id: "27",
     name: "Moong Whole",
     description: "Pure & natural Moong Whole",
@@ -127,7 +129,8 @@ const FEATURED_PRODUCTS = [
       { size: "200g", price: 40 },
       { size: "500g", price: 80 },
       { size: "1kg", price: 160 },
-    ]},
+    ],
+  },
 ];
 
 export const Home = () => {
@@ -138,7 +141,8 @@ export const Home = () => {
   >(Object.fromEntries(FEATURED_PRODUCTS.map((p) => [p.id, p.sizes[0]])));
   const isInWishlist = (productId: string) => {
     return wishlist.some((item) => item.id === productId);
-  };  const handleSizeChange = (productId: string, size: ProductSize) => {
+  };
+  const handleSizeChange = (productId: string, size: ProductSize) => {
     setSelectedSizes((prev) => ({
       ...prev,
       [productId]: size,
