@@ -4,13 +4,13 @@ import { Trash2, Plus, Minus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const Cart = () => {
-  const { cart, removeFromCart, updateQuantity } = useStore();
+  const { cart, removeFromCart, updateCartQuantity } = useStore();
 
   const subtotal = cart.reduce((sum, item) => {
     const price = item.selectedSize?.price || item.sizes[0].price;
     return sum + price * item.quantity;
   }, 0);
-  const shipping = subtotal > 150 ? 0 : 50;
+  const shipping = subtotal > 149 ? 0 : 50;
   const total = subtotal + shipping;
 
   if (cart.length === 0) {
@@ -63,7 +63,7 @@ export const Cart = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() =>
-                    updateQuantity(item.id, Math.max(0, item.quantity - 1))
+                    updateCartQuantity(item.id, Math.max(0, item.quantity - 1))
                   }
                   className="p-1 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200"
                 >
@@ -71,7 +71,7 @@ export const Cart = () => {
                 </button>
                 <span className="w-8 text-center">{item.quantity}</span>
                 <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
                   className="p-1 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200"
                 >
                   <Plus className="h-4 w-4" />

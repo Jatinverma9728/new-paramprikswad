@@ -1,15 +1,22 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { CartItem, Product, WishlistItem } from '../types';
 
+interface User {
+  name: string;
+  email: string;
+}
+
 interface Store {
+  user: User | null;
   cart: CartItem[];
   wishlist: WishlistItem[];
-  user: { isAuthenticated: boolean; data: null | { name: string; email: string } };
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  toggleWishlist: (product: Product) => void;
-  setUser: (userData: { name: string; email: string } | null) => void;
+  login: (user: User) => void;
+  logout: () => void;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (itemId: string) => void;
+  updateCartQuantity: (itemId: string, quantity: number) => void;
+  toggleWishlist: (item: WishlistItem) => void;
 }
 
 const getInitialCart = (): CartItem[] => {
@@ -22,56 +29,68 @@ const getInitialWishlist = (): WishlistItem[] => {
   return storedWishlist ? JSON.parse(storedWishlist) : [];
 };
 
-export const useStore = create<Store>((set) => ({
-  cart: getInitialCart(),
-  wishlist: getInitialWishlist(),
-  user: { isAuthenticated: false, data: null },
-  
-  addToCart: (product) =>
-    set((state) => {
-      const existingItem = state.cart.find((item) => item.id === product.id);
-      const updatedCart = existingItem
-        ? state.cart.map((item) =>
-            item.id === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
-        : [...state.cart, { ...product, quantity: 1 }];
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      return { cart: updatedCart };
-    }),
+export const useStore = create<Store>()(
+  persist(
+    (set) => ({
+      user: null,
+      cart: getInitialCart(),
+      wishlist: getInitialWishlist(),
 
-  removeFromCart: (productId) =>
-    set((state) => {
-      const updatedCart = state.cart.filter((item) => item.id !== productId);
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      return { cart: updatedCart };
-    }),
+      login: (user) => set({ user }),
+      
+      logout: () => set({ user: null }),
+      
+      addToCart: (item) =>
+        set((state) => {
+          const existingItem = state.cart.find((i) => i.id === item.id);
+          if (existingItem) {
+            return {
+              cart: state.cart.map((i) =>
+                i.id === item.id
+                  ? { ...i, quantity: i.quantity + 1 }
+                  : i
+              ),
+            };
+          }
+          return { cart: [...state.cart, { ...item, quantity: 1 }] };
+        }),
 
-  updateQuantity: (productId, quantity) =>
-    set((state) => {
-      const updatedCart = state.cart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      );
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      return { cart: updatedCart };
-    }),
+      removeFromCart: (itemId) =>
+        set((state) => ({
+          cart: state.cart.filter((item) => item.id !== itemId),
+        })),
 
-  toggleWishlist: (product) =>
-    set((state) => {
-      const exists = state.wishlist.some((item) => item.id === product.id);
-      const updatedWishlist = exists
-        ? state.wishlist.filter((item) => item.id !== product.id)
-        : [...state.wishlist, product];
-      localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-      return { wishlist: updatedWishlist };
-    }),
+      updateCartQuantity: (itemId, quantity) =>
+        set((state) => {
+          if (quantity <= 0) {
+            return {
+              cart: state.cart.filter((item) => item.id !== itemId),
+            };
+          }
+          return {
+            cart: state.cart.map((item) =>
+              item.id === itemId ? { ...item, quantity } : item
+            ),
+          };
+        }),
 
-  setUser: (userData) =>
-    set({
-      user: {
-        isAuthenticated: !!userData,
-        data: userData,
-      },
+      toggleWishlist: (item) =>
+        set((state) => {
+          const exists = state.wishlist.some((i) => i.id === item.id);
+          return {
+            wishlist: exists
+              ? state.wishlist.filter((i) => i.id !== item.id)
+              : [...state.wishlist, item],
+          };
+        }),
     }),
-}));
+    {
+      name: 'store',
+      partialize: (state) => ({
+        user: state.user,
+        cart: state.cart,
+        wishlist: state.wishlist,
+      }),
+    }
+  )
+);
